@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>asierlink</title>
+  <meta name="theme-color" content="#000000"/>
+  <style>
+    :root{
+      --bg:#000;--bg2:#1C1C1E;--bg3:#2C2C2E;--bg4:#3A3A3C;
+      --sep:#38383A;
+      --blue:#0A84FF;--bluedim:rgba(10,132,255,.13);
+      --green:#30D158;--red:#FF453A;--orange:#FF9F0A;
+      --t1:#fff;--t2:rgba(235,235,245,.82);--t3:#8E8E93;--t4:#48484A;
+      --r:16px;
+      --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--bg);color:var(--t1);font-family:var(--font);
+      min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      padding:0 16px env(safe-area-inset-bottom,16px);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    header{width:100%;max-width:460px;padding:48px 0 26px;text-align:center}
+    .logo{font-size:30px;font-weight:700;letter-spacing:-1px}
+    .logo em{font-style:normal;color:var(--blue)}
+    .sub{font-size:13px;color:var(--t3);margin-top:5px}
+
+    .stack{width:100%;max-width:460px;display:flex;flex-direction:column;gap:12px;flex:1}
+    .card{background:var(--bg2);border-radius:var(--r);border:1px solid var(--sep);overflow:hidden}
+
+    /* Drop zone */
+    #dz{padding:18px;cursor:pointer}
+    .dz-in{
+      border:1.5px dashed var(--sep);border-radius:12px;
+      padding:44px 20px;text-align:center;
+      transition:background .15s,border-color .15s;
+    }
+    #dz.over .dz-in,#dz:not(.busy) .dz-in:hover{border-color:var(--blue);background:var(--bluedim)}
+    #dz.busy{cursor:default;opacity:.7}
+    .dz-ico{font-size:36px;display:block;margin-bottom:14px;transition:transform .2s}
+    .dz-h{font-size:17px;font-weight:600;margin-bottom:6px}
+    .dz-p{font-size:13px;color:var(--t3);line-height:1.5}
+    .dz-p b{color:var(--blue);font-weight:500}
+    #fi{display:none}
+
+    /* Progress */
+    #pCard{display:none}#pCard.on{display:block}
+    .pb{padding:15px 18px 17px}
+    .pr{display:flex;justify-content:space-between;margin-bottom:9px}
+    .pn{font-size:14px;font-weight:500;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76%}
+    .pp{font-size:13px;color:var(--blue);font-weight:600;font-variant-numeric:tabular-nums}
+    .pt{background:var(--bg4);border-radius:100px;height:4px;overflow:hidden}
+    .pf{height:100%;width:0%;background:var(--blue);border-radius:100px;transition:width .2s ease}
+
+    /* Result */
+    #rCard{display:none}#rCard.on{display:block}
+    .rb{padding:14px 16px}
+    .rl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px}
+    .rr{display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:11px 14px}
+    .ru{flex:1;font-size:14px;font-weight:500;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
+    .ru:hover{text-decoration:underline}
+    #bc{
+      flex-shrink:0;background:var(--blue);color:#fff;border:none;
+      border-radius:8px;padding:7px 15px;font-size:13px;font-weight:600;
+      cursor:pointer;font-family:var(--font);
+      transition:opacity .12s,transform .12s,background .2s;
+    }
+    #bc:active{transform:scale(.93);opacity:.8}
+    #bc.ok{background:var(--green)}
+
+    /* History */
+    .hh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 12px;border-bottom:1px solid var(--sep)}
+    .hh span{font-size:15px;font-weight:600}
+    #clr{font-size:13px;color:var(--red);background:none;border:none;font-family:var(--font);font-weight:500;cursor:pointer}
+    .he{padding:30px 16px;text-align:center;color:var(--t3);font-size:14px}
+    #hl{list-style:none}
+    .hi{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--sep);transition:background .1s}
+    .hi:last-child{border-bottom:none}
+    .hi:hover{background:var(--bg3)}
+    .ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .ic-img{background:rgba(255,159,10,.18)}.ic-vid{background:rgba(255,69,58,.18)}
+    .ic-aud{background:rgba(48,209,88,.18)}.ic-doc{background:rgba(10,132,255,.18)}.ic-arc{background:rgba(191,90,242,.18)}
+    .hm{flex:1;min-width:0}
+    .hn{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ht{font-size:12px;color:var(--t3);margin-top:2px}
+    .bhc{flex-shrink:0;background:none;border:none;color:var(--blue);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;padding:6px 8px;border-radius:7px;transition:background .12s}
+    .bhc:hover{background:var(--bluedim)}
+
+    footer{width:100%;max-width:460px;padding:18px 0 24px;text-align:center;font-size:12px;color:var(--t4)}
+    footer a{color:var(--blue);text-decoration:none}
+
+    #toast{
+      position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:rgba(44,44,46,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1px solid var(--sep);color:var(--t1);
+      padding:11px 22px;border-radius:100px;font-size:14px;font-weight:500;
+      white-space:nowrap;z-index:999;pointer-events:none;opacity:0;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .2s;
+    }
+    #toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">asier<em>link</em></div>
+  <p class="sub">Drop it. Share it. Done.</p>
+</header>
+
+<div class="stack">
+  <!-- Drop zone -->
+  <div class="card" id="dz">
+    <div class="dz-in">
+      <span class="dz-ico" id="dzE">☁️</span>
+      <div class="dz-h">Drop your file here</div>
+      <p class="dz-p">or <b>tap to browse</b><br>Images · Videos · Audio · Docs · up to 200MB</p>
+    </div>
+    <input type="file" id="fi" accept="*/*">
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="pCard">
+    <div class="pb">
+      <div class="pr">
+        <span class="pn" id="pn">Uploading…</span>
+        <span class="pp" id="pp">0%</span>
+      </div>
+      <div class="pt"><div class="pf" id="pf"></div></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="rCard">
+    <div class="rb">
+      <div class="rl">Your Link</div>
+      <div class="rr">
+        <a class="ru" id="ru" href="#" target="_blank">—</a>
+        <button id="bc" onclick="copyResult()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="hh">
+      <span>Recent</span>
+      <button id="clr" onclick="clearHist()">Clear</button>
+    </div>
+    <div class="he" id="he">No uploads yet</div>
+    <ul id="hl"></ul>
+  </div>
+</div>
+
+<footer>Powered by <a href="https://catbox.moe" target="_blank" rel="noopener">catbox.moe</a> · asierlink</footer>
+<div id="toast"></div>
+
+<script>
+// ─── Service Worker ─────────────────────────────────────────────────
+// './sw.js' = relative path → works in any subfolder (e.g. /cloud/sw.js)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(() => console.log('[asierlink] SW registered'))
+    .catch(e => console.warn('[asierlink] SW failed:', e));
+}
+
+// ─── Base URL (works in root or /cloud/ or any subfolder) ───────────
+// e.g. https://nonxe.github.io/cloud/ → link = https://nonxe.github.io/cloud/abc.mp3
+const BASE = location.href.split('?')[0].replace(/\/[^\/]*$/, '/');
+
+// ─── Upload endpoints (catbox direct → CORS proxy fallback) ─────────
+const CATBOX_API   = 'https://catbox.moe/user/api.php';
+const PROXY_PREFIX = 'https://corsproxy.io/?'; // CORS proxy for GitHub Pages
+
+// ─── State ──────────────────────────────────────────────────────────
+let hist = JSON.parse(localStorage.getItem('al_h') || '[]');
+renderHist();
+
+// ─── Drop zone ──────────────────────────────────────────────────────
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+
+dz.addEventListener('click', () => { if (!dz.classList.contains('busy')) fi.click(); });
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+['dragleave','dragend'].forEach(ev => dz.addEventListener(ev, () => dz.classList.remove('over')));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) go(f); });
+fi.addEventListener('change', e => { const f=e.target.files[0]; if(f) go(f); fi.value=''; });
+
+// ─── Upload ─────────────────────────────────────────────────────────
+async function go(file) {
+  if (dz.classList.contains('busy')) return;
+
+  dz.classList.add('busy');
+  document.getElementById('rCard').classList.remove('on');
+  document.getElementById('pCard').classList.add('on');
+  document.getElementById('pn').textContent = file.name;
+  document.getElementById('dzE').textContent = '⏳';
+  setP(0);
+
+  try {
+    // Try 1: direct catbox (works if browser allows CORS)
+    // Try 2: via corsproxy.io (fallback for GitHub Pages CORS block)
+    let raw;
+    try {
+      raw = await xhrUp(CATBOX_API, makeForm(file), setP);
+    } catch(e1) {
+      if (e1.message !== 'NET') throw e1; // not a CORS/network error, don't retry
+      setP(0);
+      document.getElementById('pp').textContent = 'retrying…';
+      raw = await xhrUp(PROXY_PREFIX + encodeURIComponent(CATBOX_API), makeForm(file), setP);
+    }
+
+    const catUrl  = raw.trim();
+    if (!catUrl.startsWith('http')) throw new Error('Bad response: ' + catUrl.slice(0,80));
+
+    const filename = catUrl.split('/').pop();
+    const myUrl    = BASE + filename;
+
+    document.getElementById('ru').textContent = myUrl;
+    document.getElementById('ru').href        = myUrl;
+    document.getElementById('rCard').classList.add('on');
+    document.getElementById('pCard').classList.remove('on');
+    dz.classList.remove('busy');
+    document.getElementById('dzE').textContent = '✅';
+    setTimeout(() => document.getElementById('dzE').textContent = '☁️', 2200);
+    setP(0);
+
+    addHist({ name: file.name, filename, myUrl, catUrl, time: Date.now() });
+
+  } catch(err) {
+    document.getElementById('pCard').classList.remove('on');
+    dz.classList.remove('busy');
+    document.getElementById('dzE').textContent = '❌';
+    setTimeout(() => document.getElementById('dzE').textContent = '☁️', 2500);
+    setP(0);
+    toast('❌ ' + (err.message || 'Upload failed'));
+    console.error('[asierlink]', err);
+  }
+}
+
+function makeForm(file) {
+  const fd = new FormData();
+  fd.append('reqtype', 'fileupload');
+  fd.append('fileToUpload', file);
+  return fd;
+}
+
+function xhrUp(url, fd, onP) {
+  return new Promise((ok, fail) => {
+    const x = new XMLHttpRequest();
+    x.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) onP(Math.min(92, (e.loaded / e.total * 92) | 0));
+    });
+    x.addEventListener('load', () => {
+      onP(100);
+      const t = x.responseText.trim();
+      if (x.status >= 200 && x.status < 300) ok(t);
+      else fail(new Error('Server error ' + x.status + ': ' + t.slice(0,100)));
+    });
+    x.addEventListener('error',   () => fail(new Error('NET')));
+    x.addEventListener('timeout', () => fail(new Error('Upload timed out')));
+    x.timeout = 180000;
+    x.open('POST', url);
+    x.send(fd);
+  });
+}
+
+function setP(v) {
+  document.getElementById('pf').style.width = v + '%';
+  document.getElementById('pp').textContent = v + '%';
+}
+
+// ─── Copy ────────────────────────────────────────────────────────────
+async function copyResult() {
+  const url = document.getElementById('ru').textContent;
+  await clip(url);
+  const b = document.getElementById('bc');
+  b.textContent = 'Copied!'; b.classList.add('ok');
+  toast('🔗 Link copied!');
+  setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('ok'); }, 2000);
+}
+
+// ─── History ─────────────────────────────────────────────────────────
+function addHist(item) {
+  hist.unshift(item);
+  if (hist.length > 30) hist = hist.slice(0, 30);
+  localStorage.setItem('al_h', JSON.stringify(hist));
+  renderHist();
+}
+function clearHist() { hist = []; localStorage.removeItem('al_h'); renderHist(); }
+function renderHist() {
+  const list = document.getElementById('hl'), empty = document.getElementById('he');
+  if (!hist.length) { empty.style.display='block'; list.innerHTML=''; return; }
+  empty.style.display = 'none';
+  list.innerHTML = hist.map(h => {
+    const t = ftype(h.filename);
+    return `<li class="hi">
+      <div class="ic ic-${t}">${femo(t)}</div>
+      <div class="hm"><div class="hn">${esc(h.name)}</div><div class="ht">${ago(h.time)}</div></div>
+      <button class="bhc" onclick="copyUrl(${JSON.stringify(h.myUrl)})">Copy</button>
+    </li>`;
+  }).join('');
+}
+async function copyUrl(url) { await clip(url); toast('🔗 Link copied!'); }
+
+// ─── Toast ───────────────────────────────────────────────────────────
+let _tt;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('on'), 3000);
+}
+
+// ─── Utils ───────────────────────────────────────────────────────────
+async function clip(t) {
+  try { await navigator.clipboard.writeText(t); }
+  catch { const x=document.createElement('textarea'); x.value=t; document.body.appendChild(x); x.select(); document.execCommand('copy'); document.body.removeChild(x); }
+}
+function ftype(n='') {
+  const e = n.split('.').pop().toLowerCase();
+  if (/^(jpg|jpeg|png|gif|webp|svg|bmp|avif|ico)$/.test(e)) return 'img';
+  if (/^(mp4|mov|webm|avi|mkv|flv|wmv|m4v)$/.test(e))      return 'vid';
+  if (/^(mp3|wav|ogg|flac|aac|m4a|opus)$/.test(e))          return 'aud';
+  if (/^(pdf|doc|docx|xls|xlsx|txt|md|csv)$/.test(e))       return 'doc';
+  return 'arc';
+}
+function femo(t){return{img:'🖼',vid:'🎬',aud:'🎵',doc:'📄',arc:'📦'}[t]||'📁'}
+function ago(ts){
+  const s=(Date.now()-ts)/1000|0;
+  if(s<60) return 'just now';
+  if(s<3600) return `${s/60|0}m ago`;
+  if(s<86400) return `${s/3600|0}h ago`;
+  return `${s/86400|0}d ago`;
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body>
+</html>
