@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>asierlink</title>
+  <meta name="theme-color" content="#000000"/>
+  <style>
+    :root{
+      --bg:#000;--bg2:#1C1C1E;--bg3:#2C2C2E;--bg4:#3A3A3C;
+      --sep:#38383A;
+      --blue:#0A84FF;--bluedim:rgba(10,132,255,.13);
+      --green:#30D158;--red:#FF453A;
+      --t1:#fff;--t2:rgba(235,235,245,.8);--t3:#8E8E93;--t4:#48484A;
+      --r:16px;
+      --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--bg);color:var(--t1);
+      font-family:var(--font);min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;
+      padding:0 16px env(safe-area-inset-bottom,16px);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── HEADER ── */
+    header{width:100%;max-width:460px;padding:48px 0 26px;text-align:center}
+    .logo{font-size:30px;font-weight:700;letter-spacing:-1px}
+    .logo em{font-style:normal;color:var(--blue)}
+    .sub{font-size:13px;color:var(--t3);margin-top:5px}
+
+    /* ── STACK ── */
+    .stack{width:100%;max-width:460px;display:flex;flex-direction:column;gap:12px;flex:1}
+
+    /* ── CARD ── */
+    .card{background:var(--bg2);border-radius:var(--r);border:1px solid var(--sep);overflow:hidden}
+
+    /* ── DROP ZONE ── */
+    #dz{padding:18px;cursor:pointer}
+    .dz-in{
+      border:1.5px dashed var(--sep);border-radius:12px;
+      padding:42px 20px;text-align:center;
+      transition:background .15s,border-color .15s;
+    }
+    #dz.over .dz-in,#dz:not(.uploading) .dz-in:hover{
+      border-color:var(--blue);background:var(--bluedim);
+    }
+    #dz.uploading{cursor:default}
+    .dz-emoji{font-size:36px;display:block;margin-bottom:14px}
+    .dz-h{font-size:17px;font-weight:600;margin-bottom:6px}
+    .dz-p{font-size:13px;color:var(--t3);line-height:1.5}
+    .dz-p b{color:var(--blue);font-weight:500}
+    #fi{display:none}
+
+    /* ── PROGRESS ── */
+    #pCard{display:none}
+    #pCard.on{display:block}
+    .pBody{padding:15px 18px 17px}
+    .pRow{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+    .pName{font-size:14px;font-weight:500;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76%}
+    .pPct{font-size:13px;color:var(--blue);font-weight:600;font-variant-numeric:tabular-nums}
+    .pTrack{background:var(--bg4);border-radius:100px;height:4px;overflow:hidden}
+    .pFill{height:100%;width:0%;background:var(--blue);border-radius:100px;transition:width .2s ease}
+
+    /* ── RESULT ── */
+    #rCard{display:none}
+    #rCard.on{display:block}
+    .rBody{padding:14px 16px}
+    .rLabel{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px}
+    .rRow{display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:11px 14px}
+    .rUrl{flex:1;font-size:14px;font-weight:500;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
+    .rUrl:hover{text-decoration:underline}
+    #btnCopy{
+      flex-shrink:0;background:var(--blue);color:#fff;border:none;
+      border-radius:8px;padding:7px 15px;font-size:13px;font-weight:600;
+      cursor:pointer;font-family:var(--font);
+      transition:opacity .12s,transform .12s,background .2s;
+    }
+    #btnCopy:active{transform:scale(.93);opacity:.8}
+    #btnCopy.ok{background:var(--green)}
+
+    /* ── SW STATUS ── */
+    #swBanner{
+      display:none;background:var(--bg2);border-radius:10px;
+      border:1px solid var(--sep);padding:11px 14px;
+      font-size:13px;color:var(--t3);text-align:center;
+      line-height:1.5;
+    }
+    #swBanner.warn{border-color:rgba(255,159,10,.4);color:#FF9F0A}
+    #swBanner.ok{border-color:rgba(48,209,88,.3);color:var(--green)}
+    #swBanner.on{display:block}
+
+    /* ── HISTORY ── */
+    .hHead{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:13px 16px 12px;border-bottom:1px solid var(--sep);
+    }
+    .hHead span{font-size:15px;font-weight:600}
+    #btnClr{font-size:13px;color:var(--red);background:none;border:none;font-family:var(--font);font-weight:500;cursor:pointer}
+    .hEmpty{padding:30px 16px;text-align:center;color:var(--t3);font-size:14px}
+    #hList{list-style:none}
+    .hItem{
+      display:flex;align-items:center;gap:12px;
+      padding:11px 16px;border-bottom:1px solid var(--sep);
+      transition:background .1s;
+    }
+    .hItem:last-child{border-bottom:none}
+    .hItem:hover{background:var(--bg3)}
+    .ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .ico-img{background:rgba(255,159,10,.18)}
+    .ico-vid{background:rgba(255,69,58,.18)}
+    .ico-aud{background:rgba(48,209,88,.18)}
+    .ico-doc{background:rgba(10,132,255,.18)}
+    .ico-arc{background:rgba(191,90,242,.18)}
+    .hMeta{flex:1;min-width:0}
+    .hName{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .hTime{font-size:12px;color:var(--t3);margin-top:2px}
+    .btnHC{
+      flex-shrink:0;background:none;border:none;
+      color:var(--blue);font-size:13px;font-weight:500;
+      font-family:var(--font);cursor:pointer;
+      padding:6px 8px;border-radius:7px;
+      transition:background .12s;
+    }
+    .btnHC:hover{background:var(--bluedim)}
+
+    /* ── FOOTER ── */
+    footer{width:100%;max-width:460px;padding:18px 0 24px;text-align:center;font-size:12px;color:var(--t4)}
+    footer a{color:var(--blue);text-decoration:none}
+
+    /* ── TOAST ── */
+    #toast{
+      position:fixed;
+      bottom:max(26px,env(safe-area-inset-bottom,26px));
+      left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:rgba(44,44,46,.97);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1px solid var(--sep);
+      color:var(--t1);padding:11px 22px;border-radius:100px;
+      font-size:14px;font-weight:500;white-space:nowrap;
+      z-index:999;pointer-events:none;
+      opacity:0;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .2s;
+    }
+    #toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">asier<em>link</em></div>
+  <p class="sub">Drop it. Share it. Done.</p>
+</header>
+
+<div class="stack">
+
+  <!-- Service worker status -->
+  <div id="swBanner"></div>
+
+  <!-- Upload zone -->
+  <div class="card" id="dz">
+    <div class="dz-in">
+      <span class="dz-emoji" id="dzE">☁️</span>
+      <div class="dz-h">Drop your file here</div>
+      <p class="dz-p">or <b>tap to browse</b><br>Images · Videos · Audio · Docs · up to 200MB</p>
+    </div>
+    <input type="file" id="fi" accept="*/*">
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="pCard">
+    <div class="pBody">
+      <div class="pRow">
+        <span class="pName" id="pName">Uploading…</span>
+        <span class="pPct"  id="pPct">0%</span>
+      </div>
+      <div class="pTrack"><div class="pFill" id="pFill"></div></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="rCard">
+    <div class="rBody">
+      <div class="rLabel">Your Link</div>
+      <div class="rRow">
+        <a class="rUrl" id="rUrl" href="#" target="_blank">—</a>
+        <button id="btnCopy" onclick="copyResult()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="hHead">
+      <span>Recent</span>
+      <button id="btnClr" onclick="clearHist()">Clear</button>
+    </div>
+    <div class="hEmpty" id="hEmpty">No uploads yet</div>
+    <ul id="hList"></ul>
+  </div>
+
+</div>
+
+<footer>Powered by <a href="https://catbox.moe" target="_blank" rel="noopener">catbox.moe</a> · asierlink</footer>
+<div id="toast"></div>
+
+<script>
+// ─── Service Worker ──────────────────────────────────────────────
+const swBanner = document.getElementById('swBanner');
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    swBanner.textContent = '✓ Direct links active — ' + location.origin + '/yourfile.mp3 will work';
+    swBanner.classList.add('on','ok');
+    setTimeout(() => swBanner.classList.remove('on'), 4000);
+  }).catch(err => {
+    swBanner.textContent = '⚠ Direct links need a page visit first (service worker unavailable here)';
+    swBanner.classList.add('on','warn');
+  });
+} else {
+  swBanner.textContent = '⚠ Your browser does not support service workers — direct links may redirect';
+  swBanner.classList.add('on','warn');
+}
+
+// ─── Config ─────────────────────────────────────────────────────
+const DOMAIN   = location.origin;           // e.g. https://youruser.github.io
+const CATBOX   = 'https://catbox.moe/user/api.php';
+
+// ─── State ──────────────────────────────────────────────────────
+let hist = JSON.parse(localStorage.getItem('al_h') || '[]');
+renderHist();
+
+// ─── Drop zone ──────────────────────────────────────────────────
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+
+dz.addEventListener('click', () => { if (!dz.classList.contains('uploading')) fi.click(); });
+
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('dragend',   () => dz.classList.remove('over'));
+
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) doUpload(f);
+});
+
+fi.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) doUpload(f);
+  fi.value = '';
+});
+
+// ─── Upload ─────────────────────────────────────────────────────
+async function doUpload(file) {
+  // Guard
+  if (dz.classList.contains('uploading')) return;
+
+  // UI: uploading state
+  dz.classList.add('uploading');
+  document.getElementById('rCard').classList.remove('on');
+  document.getElementById('pCard').classList.add('on');
+  document.getElementById('pName').textContent = file.name;
+  document.getElementById('dzE').textContent = '⏳';
+  setP(0);
+
+  const fd = new FormData();
+  fd.append('reqtype', 'fileupload');
+  fd.append('fileToUpload', file);
+
+  try {
+    const raw = await xhrPost(CATBOX, fd, setP);
+    const url = raw.trim();
+
+    if (!url.startsWith('http')) throw new Error('Bad response: ' + url);
+
+    // Extract filename: https://files.catbox.moe/abc123.mp3 → abc123.mp3
+    const filename = url.split('/').pop();
+    const myUrl    = DOMAIN + '/' + filename;
+
+    // Show result
+    const rUrl = document.getElementById('rUrl');
+    rUrl.textContent = myUrl;
+    rUrl.href        = myUrl;          // opens through SW / same domain
+    rUrl.dataset.cat = url;            // store catbox url too
+
+    document.getElementById('rCard').classList.add('on');
+    document.getElementById('pCard').classList.remove('on');
+    dz.classList.remove('uploading');
+    document.getElementById('dzE').textContent = '✅';
+    setTimeout(() => document.getElementById('dzE').textContent = '☁️', 2000);
+    setP(0);
+
+    // Save to history
+    addHist({ name: file.name, filename, myUrl, catUrl: url, time: Date.now() });
+
+  } catch (err) {
+    document.getElementById('pCard').classList.remove('on');
+    dz.classList.remove('uploading');
+    document.getElementById('dzE').textContent = '❌';
+    setTimeout(() => document.getElementById('dzE').textContent = '☁️', 2500);
+    setP(0);
+    toast('Upload failed: ' + (err.message || 'Unknown error'));
+    console.error('[asierlink] upload error:', err);
+  }
+}
+
+function xhrPost(url, fd, onP) {
+  return new Promise((ok, fail) => {
+    const x = new XMLHttpRequest();
+
+    x.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) onP(Math.min(92, Math.round(e.loaded / e.total * 92)));
+    });
+
+    x.addEventListener('load', () => {
+      onP(100);
+      if (x.status >= 200 && x.status < 300) {
+        ok(x.responseText);
+      } else {
+        fail(new Error('HTTP ' + x.status + ': ' + x.responseText.slice(0, 120)));
+      }
+    });
+
+    x.addEventListener('error',   () => fail(new Error('Network error — check your connection')));
+    x.addEventListener('timeout', () => fail(new Error('Upload timed out')));
+
+    x.timeout = 120000; // 2 min timeout
+    x.open('POST', url);
+    x.send(fd);
+  });
+}
+
+function setP(pct) {
+  document.getElementById('pFill').style.width = pct + '%';
+  document.getElementById('pPct').textContent  = pct + '%';
+}
+
+// ─── Copy ───────────────────────────────────────────────────────
+async function copyResult() {
+  const url = document.getElementById('rUrl').textContent;
+  await clip(url);
+  const b = document.getElementById('btnCopy');
+  b.textContent = 'Copied!'; b.classList.add('ok');
+  toast('🔗 Link copied!');
+  setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('ok'); }, 2000);
+}
+
+// ─── History ────────────────────────────────────────────────────
+function addHist(item) {
+  hist.unshift(item);
+  if (hist.length > 30) hist = hist.slice(0,30);
+  localStorage.setItem('al_h', JSON.stringify(hist));
+  renderHist();
+}
+
+function clearHist() {
+  hist = []; localStorage.removeItem('al_h'); renderHist();
+}
+
+function renderHist() {
+  const list  = document.getElementById('hList');
+  const empty = document.getElementById('hEmpty');
+  if (!hist.length) { empty.style.display='block'; list.innerHTML=''; return; }
+  empty.style.display = 'none';
+  list.innerHTML = hist.map(h => {
+    const t = ftype(h.filename);
+    return `<li class="hItem">
+      <div class="ico ico-${t}">${femo(t)}</div>
+      <div class="hMeta">
+        <div class="hName">${esc(h.name)}</div>
+        <div class="hTime">${ago(h.time)}</div>
+      </div>
+      <button class="btnHC" onclick="copyUrl(${JSON.stringify(h.myUrl)})">Copy</button>
+    </li>`;
+  }).join('');
+}
+
+async function copyUrl(url) { await clip(url); toast('🔗 Link copied!'); }
+
+// ─── Toast ──────────────────────────────────────────────────────
+let _tt;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('on'), 2800);
+}
+
+// ─── Helpers ────────────────────────────────────────────────────
+async function clip(text) {
+  try { await navigator.clipboard.writeText(text); }
+  catch { const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
+}
+
+function ftype(n='') {
+  const e = n.split('.').pop().toLowerCase();
+  if (/^(jpg|jpeg|png|gif|webp|svg|bmp|avif|ico|tiff)$/.test(e)) return 'img';
+  if (/^(mp4|mov|webm|avi|mkv|flv|wmv|m4v|3gp)$/.test(e))       return 'vid';
+  if (/^(mp3|wav|ogg|flac|aac|m4a|opus|weba)$/.test(e))          return 'aud';
+  if (/^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|md|csv)$/.test(e))   return 'doc';
+  return 'arc';
+}
+
+function femo(t) { return {img:'🖼',vid:'🎬',aud:'🎵',doc:'📄',arc:'📦'}[t]||'📁'; }
+
+function ago(ts) {
+  const s = (Date.now()-ts)/1000|0;
+  if (s<60)    return 'just now';
+  if (s<3600)  return `${s/60|0}m ago`;
+  if (s<86400) return `${s/3600|0}h ago`;
+  return `${s/86400|0}d ago`;
+}
+
+function esc(s) {
+  return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
