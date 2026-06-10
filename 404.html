@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>asierlink</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 8px;
+    }
+    p { color: #8E8E93; font-size: 14px; }
+    a { color: #0A84FF; text-decoration: none; }
+  </style>
+  <script>
+    (function () {
+      var path = window.location.pathname; // e.g. /abc123.jpg
+
+      // If path looks like a file (has an extension), redirect to catbox
+      if (/\.[a-zA-Z0-9]{1,10}$/.test(path)) {
+        window.location.replace('https://files.catbox.moe' + path);
+      } else {
+        // Not a file path — send to homepage
+        window.location.replace('/');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting…</p>
+  <p><a href="/">← asierlink home</a></p>
+</body>
+</html>

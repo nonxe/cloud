@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>asierlink</title>
+  <meta name="description" content="Drop it. Share it. Done." />
+  <meta name="theme-color" content="#000000" />
+  <style>
+    :root {
+      --bg:        #000000;
+      --bg2:       #1C1C1E;
+      --bg3:       #2C2C2E;
+      --bg4:       #3A3A3C;
+      --sep:       #38383A;
+      --blue:      #0A84FF;
+      --blue-dim:  rgba(10, 132, 255, 0.12);
+      --blue-dim2: rgba(10, 132, 255, 0.22);
+      --green:     #30D158;
+      --red:       #FF453A;
+      --orange:    #FF9F0A;
+      --purple:    #BF5AF2;
+      --t1:        #FFFFFF;
+      --t2:        rgba(235,235,245,0.78);
+      --t3:        #8E8E93;
+      --t4:        #48484A;
+      --r:         16px;
+      --font:      -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--t1);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 20px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      width: 100%;
+      max-width: 480px;
+      padding: 44px 0 28px;
+      text-align: center;
+    }
+
+    .wordmark {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--t1);
+      user-select: none;
+    }
+
+    .wordmark em {
+      font-style: normal;
+      color: var(--blue);
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--t3);
+      margin-top: 5px;
+      letter-spacing: 0.15px;
+      font-weight: 400;
+    }
+
+    /* ─── LAYOUT ─── */
+    .stack {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--bg2);
+      border-radius: var(--r);
+      border: 1px solid var(--sep);
+      overflow: hidden;
+    }
+
+    /* ─── DROP ZONE ─── */
+    #dropZone {
+      padding: 20px;
+      cursor: pointer;
+    }
+
+    .dz-inner {
+      border: 1.5px dashed var(--sep);
+      border-radius: 12px;
+      padding: 44px 20px;
+      text-align: center;
+      transition: background 0.18s, border-color 0.18s;
+      position: relative;
+    }
+
+    #dropZone.over .dz-inner,
+    .dz-inner:hover {
+      border-color: var(--blue);
+      background: var(--blue-dim);
+    }
+
+    .dz-ring {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .dz-ring svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .dz-ring .ring-bg {
+      stroke: var(--bg4);
+      fill: none;
+      stroke-width: 3;
+    }
+
+    .dz-ring .ring-fill {
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 0 157;
+      transform-origin: center;
+      transform: rotate(-90deg);
+      transition: stroke-dasharray 0.35s cubic-bezier(.4,0,.2,1);
+    }
+
+    .dz-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .dz-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 5px;
+    }
+
+    .dz-sub {
+      font-size: 13px;
+      color: var(--t3);
+      line-height: 1.5;
+    }
+
+    .dz-sub b {
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    #fileInput { display: none; }
+
+    /* ─── PROGRESS ─── */
+    #progressCard {
+      display: none;
+    }
+
+    #progressCard.show {
+      display: block;
+    }
+
+    .prog-body {
+      padding: 16px 20px 18px;
+    }
+
+    .prog-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .prog-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--t2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 75%;
+    }
+
+    .prog-pct {
+      font-size: 13px;
+      color: var(--blue);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .prog-track {
+      background: var(--bg4);
+      border-radius: 100px;
+      height: 4px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--blue);
+      border-radius: 100px;
+      transition: width 0.25s ease;
+    }
+
+    /* ─── RESULT ─── */
+    #resultCard {
+      display: none;
+    }
+
+    #resultCard.show {
+      display: block;
+    }
+
+    .result-body {
+      padding: 14px 16px;
+    }
+
+    .result-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--t3);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      margin-bottom: 10px;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 11px 14px;
+    }
+
+    .result-url {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--blue);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .result-url:hover {
+      text-decoration: underline;
+    }
+
+    .btn-copy {
+      flex-shrink: 0;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: opacity 0.12s, transform 0.12s, background 0.2s;
+    }
+
+    .btn-copy:active { transform: scale(0.93); opacity: 0.8; }
+    .btn-copy.done  { background: var(--green); }
+
+    /* ─── HISTORY ─── */
+    .hist-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px 12px;
+      border-bottom: 1px solid var(--sep);
+    }
+
+    .hist-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .btn-clear {
+      font-size: 13px;
+      color: var(--red);
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-weight: 500;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+
+    .hist-empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--t3);
+      font-size: 14px;
+    }
+
+    .hist-list {
+      list-style: none;
+    }
+
+    .hist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--sep);
+      transition: background 0.1s;
+      cursor: default;
+    }
+
+    .hist-item:last-child { border-bottom: none; }
+    .hist-item:hover      { background: var(--bg3); }
+
+    .ftype {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .ftype-img { background: rgba(255,159,10,.18); }
+    .ftype-vid { background: rgba(255,69,58,.18); }
+    .ftype-aud { background: rgba(48,209,88,.18); }
+    .ftype-doc { background: rgba(10,132,255,.18); }
+    .ftype-arc { background: rgba(191,90,242,.18); }
+
+    .hist-meta { flex: 1; min-width: 0; }
+
+    .hist-name {
+      font-size: 14px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .hist-time {
+      font-size: 12px;
+      color: var(--t3);
+      margin-top: 2px;
+    }
+
+    .btn-hcopy {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 7px;
+      transition: background 0.12s;
+    }
+
+    .btn-hcopy:hover { background: var(--blue-dim2); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px 0 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--t4);
+    }
+
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom, 28px));
+      left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: rgba(44,44,46,0.96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--sep);
+      color: var(--t1);
+      padding: 11px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      z-index: 999;
+      transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ─── UPLOAD STATE on drop zone ─── */
+    #dropZone.uploading .dz-inner {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* ─── @media dark check ─── */
+    @media (prefers-color-scheme: dark) { /* already dark, no changes */ }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">asier<em>link</em></div>
+  <p class="tagline">Drop it. Share it. Done.</p>
+</header>
+
+<div class="stack">
+
+  <!-- Upload zone -->
+  <div class="card" id="dropZone">
+    <div class="dz-inner">
+      <div class="dz-ring">
+        <svg viewBox="0 0 60 60">
+          <circle class="ring-bg"   cx="30" cy="30" r="25"/>
+          <circle class="ring-fill" cx="30" cy="30" r="25" id="ringFill"/>
+        </svg>
+        <div class="dz-icon" id="dzIcon">☁️</div>
+      </div>
+      <div class="dz-title">Drop your file here</div>
+      <p class="dz-sub">or <b>tap to browse</b><br>Images · Video · Audio · Docs · up to 200MB</p>
+    </div>
+    <input type="file" id="fileInput" accept="*/*">
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="progressCard">
+    <div class="prog-body">
+      <div class="prog-top">
+        <span class="prog-name" id="progName">Uploading…</span>
+        <span class="prog-pct"  id="progPct">0%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="progFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="resultCard">
+    <div class="result-body">
+      <div class="result-eyebrow">Your Link</div>
+      <div class="result-row">
+        <a class="result-url" id="resultUrl" href="#" target="_blank">—</a>
+        <button class="btn-copy" id="btnCopy" onclick="copyResult()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card" id="histCard">
+    <div class="hist-header">
+      <span class="hist-title">Recent</span>
+      <button class="btn-clear" onclick="clearHistory()">Clear</button>
+    </div>
+    <div class="hist-empty" id="histEmpty">No uploads yet</div>
+    <ul class="hist-list" id="histList"></ul>
+  </div>
+
+</div>
+
+<footer>
+  Powered by <a href="https://catbox.moe" target="_blank" rel="noopener">catbox.moe</a> &middot; asierlink
+</footer>
+
+<div id="toast"></div>
+
+<script>
+// ─── Config ────────────────────────────────────────────────────────────────
+// Set this to your actual GitHub Pages domain, e.g. "https://yourusername.github.io"
+const MY_DOMAIN = window.location.origin;
+const CATBOX_FILES = 'https://files.catbox.moe';
+
+// ─── State ─────────────────────────────────────────────────────────────────
+let uploads = JSON.parse(localStorage.getItem('al_history') || '[]');
+
+// ─── Elements ──────────────────────────────────────────────────────────────
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('fileInput');
+const progressCard= document.getElementById('progressCard');
+const resultCard  = document.getElementById('resultCard');
+const progName    = document.getElementById('progName');
+const progPct     = document.getElementById('progPct');
+const progFill    = document.getElementById('progFill');
+const ringFill    = document.getElementById('ringFill');
+const resultUrl   = document.getElementById('resultUrl');
+const btnCopy     = document.getElementById('btnCopy');
+const dzIcon      = document.getElementById('dzIcon');
+
+// Circumference of r=25 circle
+const CIRC = 2 * Math.PI * 25; // ~157.08
+
+renderHistory();
+
+// ─── Drop zone events ──────────────────────────────────────────────────────
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('over');
+});
+
+['dragleave','dragend'].forEach(ev =>
+  dropZone.addEventListener(ev, () => dropZone.classList.remove('over'))
+);
+
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (file) upload(file);
+});
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) upload(file);
+  fileInput.value = '';
+});
+
+// ─── Upload ────────────────────────────────────────────────────────────────
+async function upload(file) {
+  // UI: start state
+  dropZone.classList.add('uploading');
+  resultCard.classList.remove('show');
+  progressCard.classList.add('show');
+  progName.textContent = file.name;
+  setProgress(0);
+  dzIcon.textContent = '⏳';
+
+  const fd = new FormData();
+  fd.append('reqtype', 'fileupload');
+  fd.append('fileToUpload', file);
+
+  try {
+    const catUrl = await xhrUpload(fd, setProgress);
+
+    // Extract filename: "https://files.catbox.moe/abc123.jpg" → "abc123.jpg"
+    const filename = catUrl.trim().split('/').pop();
+    const myUrl    = MY_DOMAIN + '/' + filename;
+
+    // Show result
+    resultUrl.textContent = myUrl;
+    resultUrl.href        = catUrl; // actual catbox link
+    resultCard.classList.add('show');
+
+    // Reset
+    progressCard.classList.remove('show');
+    dropZone.classList.remove('uploading');
+    dzIcon.textContent = '✅';
+    setTimeout(() => { dzIcon.textContent = '☁️'; }, 2200);
+    setProgress(0);
+
+    // Save history
+    saveUpload({ name: file.name, filename, myUrl, catUrl, time: Date.now() });
+
+  } catch (err) {
+    progressCard.classList.remove('show');
+    dropZone.classList.remove('uploading');
+    dzIcon.textContent = '❌';
+    setTimeout(() => { dzIcon.textContent = '☁️'; }, 2200);
+    toast('Upload failed — please try again');
+  }
+}
+
+function xhrUpload(fd, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) {
+        // Cap at 95% until server responds
+        const pct = Math.min(95, Math.round((e.loaded / e.total) * 95));
+        onProgress(pct);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      onProgress(100);
+      const text = xhr.responseText.trim();
+      if (xhr.status === 200 && text.startsWith('https://')) {
+        resolve(text);
+      } else {
+        reject(new Error(text || 'Unknown error'));
+      }
+    });
+
+    xhr.addEventListener('error', () => reject(new Error('Network error')));
+    xhr.addEventListener('abort', () => reject(new Error('Aborted')));
+
+    xhr.open('POST', 'https://catbox.moe/user/api.php');
+    xhr.send(fd);
+  });
+}
+
+function setProgress(pct) {
+  progFill.style.width       = pct + '%';
+  progPct.textContent        = pct + '%';
+  // Ring arc (stroke-dasharray = progress length, then gap)
+  const filled = (pct / 100) * CIRC;
+  ringFill.style.strokeDasharray = `${filled} ${CIRC}`;
+}
+
+// ─── Copy result ───────────────────────────────────────────────────────────
+async function copyResult() {
+  const text = resultUrl.textContent;
+  await navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  btnCopy.textContent = 'Copied!';
+  btnCopy.classList.add('done');
+  toast('🔗 Link copied to clipboard');
+  setTimeout(() => { btnCopy.textContent = 'Copy'; btnCopy.classList.remove('done'); }, 2000);
+}
+
+// ─── History ───────────────────────────────────────────────────────────────
+function saveUpload(item) {
+  uploads.unshift(item);
+  if (uploads.length > 30) uploads = uploads.slice(0, 30);
+  localStorage.setItem('al_history', JSON.stringify(uploads));
+  renderHistory();
+}
+
+function clearHistory() {
+  uploads = [];
+  localStorage.removeItem('al_history');
+  renderHistory();
+}
+
+function renderHistory() {
+  const list  = document.getElementById('histList');
+  const empty = document.getElementById('histEmpty');
+
+  if (!uploads.length) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = uploads.map(u => {
+    const t = fileType(u.filename);
+    return `
+      <li class="hist-item">
+        <div class="ftype ftype-${t}">${typeEmoji(t)}</div>
+        <div class="hist-meta">
+          <div class="hist-name">${esc(u.name)}</div>
+          <div class="hist-time">${ago(u.time)}</div>
+        </div>
+        <button class="btn-hcopy" onclick="copyUrl(${JSON.stringify(u.myUrl)})">Copy</button>
+      </li>
+    `;
+  }).join('');
+}
+
+async function copyUrl(url) {
+  await navigator.clipboard.writeText(url).catch(() => fallbackCopy(url));
+  toast('🔗 Link copied!');
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────
+let toastTmr;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+function fileType(name = '') {
+  const e = name.split('.').pop().toLowerCase();
+  if (/^(jpg|jpeg|png|gif|webp|svg|bmp|ico|avif|tiff)$/.test(e)) return 'img';
+  if (/^(mp4|mov|webm|avi|mkv|flv|wmv|m4v|3gp)$/.test(e))       return 'vid';
+  if (/^(mp3|wav|ogg|flac|aac|m4a|opus|weba)$/.test(e))          return 'aud';
+  if (/^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|md|csv)$/.test(e))   return 'doc';
+  return 'arc';
+}
+
+function typeEmoji(t) {
+  return { img:'🖼', vid:'🎬', aud:'🎵', doc:'📄', arc:'📦' }[t] || '📁';
+}
+
+function ago(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60)             return 'just now';
+  if (s < 3600)           return `${Math.floor(s/60)}m ago`;
+  if (s < 86400)          return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+  );
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+</script>
+
+</body>
+</html>
